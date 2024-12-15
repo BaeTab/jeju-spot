@@ -1,0 +1,124 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="text-center">제주 로컬 스팟</h1>
+            <p class="text-center text-muted">숨겨진 제주의 매력을 발견하세요</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-center flex-wrap">
+                <a href="{% url 'spot-list' %}" class="btn {% if not selected_category %}btn-primary{% else %}btn-outline-primary{% endif %} m-1">전체</a>
+                {% for category in categories %}
+                    <a href="{% url 'spot-list' %}?category={{ category.name }}" 
+                       class="btn {% if selected_category == category.name %}btn-primary{% else %}btn-outline-primary{% endif %} m-1">
+                        {{ category.name }}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        {% if spots %}
+            {% for spot in spots %}
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 spot-card">
+                        {% if spot.images.first %}
+                            <img src="{{ spot.images.first.image.url }}" class="card-img-top" alt="{{ spot.title }}">
+                        {% else %}
+                            <img src="{% static 'images/default_spot.jpg' %}" class="card-img-top" alt="{{ spot.title }}">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ spot.title }}</h5>
+                            <p class="card-text text-muted">{{ spot.description|truncatechars:100 }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    {% if spot.category == 'restaurant' %}맛집
+                                    {% elif spot.category == 'cafe' %}카페
+                                    {% elif spot.category == 'activity' %}액티비티
+                                    {% elif spot.category == 'hidden_spot' %}숨은 명소
+                                    {% else %}{{ spot.category }}
+                                    {% endif %}
+                                </small>
+                                <a href="{% url 'spot-detail' spot.id %}" class="btn btn-sm btn-primary">자세히</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center">
+                    <p class="text-muted">등록된 장소가 없습니다.</p>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center">
+                <p class="text-muted">등록된 장소가 없습니다.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if is_paginated %}
+        <div class="row mt-4">
+            <div class="col-12">
+                <nav aria-label="페이지 네비게이션">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}">이전</a>
+                            </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                            {% if page_obj.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if selected_category %}&category={{ selected_category }}{% endif %}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}">다음</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if user.is_authenticated %}
+        <div class="row mt-4">
+            <div class="col-12 text-center">
+                <a href="{% url 'spot-create' %}" class="btn btn-success">새 장소 등록하기</a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const spotCards = document.querySelectorAll('.spot-card');
+        spotCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.classList.add('shadow-lg');
+            });
+            card.addEventListener('mouseleave', function() {
+                this.classList.remove('shadow-lg');
+            });
+        });
+    });
+</script>
+{% endblock %}

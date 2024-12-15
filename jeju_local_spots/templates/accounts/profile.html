@@ -1,0 +1,95 @@
+{% extends 'base/base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="text-center mb-0">프로필</h4>
+            </div>
+            <div class="card-body text-center">
+                {% if user.profile_image %}
+                    <img src="{{ user.profile_image.url }}" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                {% else %}
+                    <img src="{% static 'images/default_profile.png' %}" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                {% endif %}
+                <h5>{{ user.username }}</h5>
+                <p class="text-muted">{{ user.email }}</p>
+                <p>포인트: {{ user.points }}</p>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="text-center mb-0">프로필 수정</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <div class="text-center mt-3">
+                        <button type="submit" class="btn btn-primary">프로필 업데이트</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="text-center mb-0">내가 생성한 장소</h4>
+            </div>
+            <div class="card-body">
+                {% if user_spots %}
+                    <div class="row">
+                        {% for spot in user_spots %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card">
+                                    {% if spot.spotimage_set.first %}
+                                        <img src="{{ spot.spotimage_set.first.image.url }}" class="card-img-top" alt="{{ spot.title }}">
+                                    {% endif %}
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ spot.title }}</h5>
+                                        <p class="card-text">{{ spot.description|truncatechars:100 }}</p>
+                                        <a href="{% url 'spot-detail' spot.id %}" class="btn btn-primary btn-sm">상세보기</a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-center text-muted">아직 생성한 장소가 없습니다.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="text-center mb-0">내가 생성한 이벤트</h4>
+            </div>
+            <div class="card-body">
+                {% if user_events %}
+                    <div class="row">
+                        {% for event in user_events %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ event.title }}</h5>
+                                        <p class="card-text">{{ event.description|truncatechars:100 }}</p>
+                                        <a href="{% url 'event-detail' event.id %}" class="btn btn-primary btn-sm">상세보기</a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-center text-muted">아직 생성한 이벤트가 없습니다.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

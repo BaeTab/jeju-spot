@@ -1,0 +1,98 @@
+{% extends 'base/base.html' %}
+{% load static crispy_forms_tags %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white text-center">
+                    <h2>새 장소 등록</h2>
+                </div>
+                <div class="card-body">
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+
+                        <div id="image-preview" class="row mt-3">
+                            <!-- 이미지 미리보기 공간 -->
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">장소 등록</button>
+                            <a href="{% url 'spot-list' %}" class="btn btn-secondary btn-lg ml-2">취소</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const imageInput = document.getElementById('id_images');
+    const imagePreview = document.getElementById('image-preview');
+    const MAX_IMAGES = 5;
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+    imageInput.addEventListener('change', function(e) {
+        // 기존 미리보기 초기화
+        imagePreview.innerHTML = '';
+        
+        const files = Array.from(this.files);
+        
+        // 이미지 개수 제한
+        if (files.length > MAX_IMAGES) {
+            alert(`최대 ${MAX_IMAGES}장의 이미지만 업로드할 수 있습니다.`);
+            this.value = ''; // 파일 선택 초기화
+            return;
+        }
+        
+        // 이미지 미리보기 및 유효성 검사
+        files.forEach(function(file, index) {
+            // 파일 크기 제한
+            if (file.size > MAX_FILE_SIZE) {
+                alert(`${file.name}의 파일 크기가 5MB를 초과합니다.`);
+                return;
+            }
+            
+            // 이미지 타입 검사
+            if (!file.type.startsWith('image/')) {
+                alert(`${file.name}은 유효한 이미지 파일이 아닙니다.`);
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgWrapper = document.createElement('div');
+                imgWrapper.classList.add('col-md-3', 'mb-3');
+                
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.classList.add('img-fluid', 'rounded');
+                
+                imgWrapper.appendChild(img);
+                imagePreview.appendChild(imgWrapper);
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+});
+</script>
+{% endblock %}

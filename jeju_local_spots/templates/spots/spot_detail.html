@@ -1,0 +1,194 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <!-- 이미지 캐러셀 -->
+                {% if spot.spotimage_set.all %}
+                    <div id="spotImageCarousel" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            {% for image in spot.spotimage_set.all %}
+                                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                    <img src="{{ image.image.url }}" class="d-block w-100" alt="{{ spot.title }}">
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% if spot.spotimage_set.count > 1 %}
+                            <button class="carousel-control-prev" type="button" data-bs-target="#spotImageCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">이전</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#spotImageCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">다음</span>
+                            </button>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <img src="{% static 'images/default_spot.jpg' %}" class="card-img-top" alt="{{ spot.title }}">
+                {% endif %}
+
+                <div class="card-body">
+                    <h2 class="card-title">{{ spot.title }}</h2>
+                    <p class="card-text">{{ spot.description }}</p>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <span class="badge bg-primary">{{ spot.category.name }}</span>
+                            <small class="text-muted ml-2">작성자: {{ spot.created_by.username }}</small>
+                        </div>
+                        
+                        {% if user == spot.created_by %}
+                            <div>
+                                <a href="{% url 'spot-update' spot.id %}" class="btn btn-sm btn-outline-primary">수정</a>
+                                <a href="{% url 'spot-delete' spot.id %}" class="btn btn-sm btn-outline-danger">삭제</a>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>주소:</strong> {{ spot.address }}
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>좋아요:</strong> 
+                        <span id="likes-count">{{ spot.likes.count }}</span>
+                        {% if user.is_authenticated %}
+                            <button id="like-button" class="btn btn-sm {% if user in spot.likes.all %}btn-danger{% else %}btn-outline-danger{% endif %}" 
+                                    data-spot-id="{{ spot.id }}">
+                                {% if user in spot.likes.all %}
+                                    <i class="fas fa-heart"></i>
+                                {% else %}
+                                    <i class="far fa-heart"></i>
+                                {% endif %}
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 리뷰 섹션 -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">리뷰 
+                        {% if average_rating %}
+                            <span class="badge bg-warning text-dark ml-2">
+                                {{ average_rating|floatformat:1 }}
+                            </span>
+                        {% endif %}
+                    </h5>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'create-spot-review' spot.id %}" class="btn btn-sm btn-primary">리뷰 작성</a>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if reviews %}
+                        {% for review in reviews %}
+                            <div class="review mb-3 pb-3 border-bottom">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <strong>{{ review.user.username }}</strong>
+                                        <span class="badge bg-secondary ml-2">
+                                            {{ review.get_rating_display }}
+                                        </span>
+                                    </div>
+                                    <small class="text-muted">{{ review.created_at|date:"Y-m-d H:i" }}</small>
+                                </div>
+                                <p>{{ review.content }}</p>
+                                {% if user == review.user %}
+                                    <div class="text-right">
+                                        <a href="{% url 'create-spot-review' spot.id %}" class="btn btn-sm btn-outline-primary mr-2">수정</a>
+                                        <a href="{% url 'delete-review' review.id %}" class="btn btn-sm btn-outline-danger">삭제</a>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-center text-muted">아직 작성된 리뷰가 없습니다.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- 관련 장소 섹션 -->
+            <div class="card">
+                <div class="card-header">
+                    관련 장소
+                </div>
+                <div class="card-body">
+                    {% if related_spots %}
+                        {% for related_spot in related_spots %}
+                            <div class="mb-3">
+                                <a href="{% url 'spot-detail' related_spot.id %}" class="text-decoration-none">
+                                    {% if related_spot.spotimage_set.first %}
+                                        <img src="{{ related_spot.spotimage_set.first.image.url }}" class="img-fluid rounded mb-2" alt="{{ related_spot.title }}">
+                                    {% endif %}
+                                    <h6>{{ related_spot.title }}</h6>
+                                </a>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-center text-muted">관련 장소가 없습니다.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const likeButton = document.getElementById('like-button');
+        
+        if (likeButton) {
+            likeButton.addEventListener('click', function() {
+                const spotId = this.dataset.spotId;
+                
+                fetch(`/api/spots/${spotId}/like/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const likesCount = document.getElementById('likes-count');
+                    likesCount.textContent = data.likes_count;
+
+                    if (data.status === 'liked') {
+                        this.classList.remove('btn-outline-danger');
+                        this.classList.add('btn-danger');
+                        this.innerHTML = '<i class="fas fa-heart"></i>';
+                    } else {
+                        this.classList.remove('btn-danger');
+                        this.classList.add('btn-outline-danger');
+                        this.innerHTML = '<i class="far fa-heart"></i>';
+                    }
+                });
+            });
+        }
+    });
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}

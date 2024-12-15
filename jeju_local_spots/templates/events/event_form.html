@@ -1,0 +1,39 @@
+{% extends 'base/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="text-center mb-0">
+                        {% if form.instance.pk %}
+                            이벤트 수정
+                        {% else %}
+                            새 이벤트 등록
+                        {% endif %}
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                {% if form.instance.pk %}
+                                    수정하기
+                                {% else %}
+                                    등록하기
+                                {% endif %}
+                            </button>
+                            <a href="{% url 'event-list' %}" class="btn btn-secondary ml-2">취소</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+/* 전체 페이지 스타일 */
+body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background-color: #f4f6f9;
+}
+
+/* 카드 스타일 */
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 20px;
+}
+
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+/* 버튼 스타일 */
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+/* 이미지 스타일 */
+.img-fluid {
+    max-height: 250px;
+    object-fit: cover;
+}
+
+/* 폼 스타일 */
+.form-control {
+    border-radius: 5px;
+}
+
+/* 푸터 스타일 */
+.footer {
+    margin-top: 50px;
+    padding: 20px 0;
+    background-color: #f8f9fa;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .card-deck .card {
+        margin-bottom: 20px;
+    }
+}

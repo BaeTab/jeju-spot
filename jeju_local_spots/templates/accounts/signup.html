@@ -1,0 +1,57 @@
+{% extends 'base/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h3 class="text-center mb-0">회원가입</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form.username|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.email|as_crispy_field }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form.password1|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.password2|as_crispy_field }}
+                        </div>
+                    </div>
+                    {{ form.bio|as_crispy_field }}
+                    <div class="form-group">
+                        <label for="{{ form.profile_image.id_for_label }}">프로필 이미지</label>
+                        {{ form.profile_image }}
+                        <img id="image-preview" src="" alt="이미지 미리보기" style="display:none; max-width: 200px; margin-top: 10px;">
+                    </div>
+                    <div class="text-center mt-3">
+                        <button type="submit" class="btn btn-primary">가입하기</button>
+                    </div>
+                </form>
+                <div class="text-center mt-3">
+                    <p>
+                        이미 계정이 있으신가요? <a href="{% url 'login' %}">로그인</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_scripts %}
+<script>
+    document.getElementById('id_profile_image').addEventListener('change', function(event) {
+        previewImage(this);
+    });
+</script>
+{% endblock %}
+{% endblock %}

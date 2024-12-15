@@ -1,0 +1,131 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="text-center">검색 결과</h1>
+            <p class="text-center text-muted">
+                "{{ query }}"에 대한 
+                {% if search_type == 'spots' %}장소{% endif %}
+                {% if search_type == 'events' %}이벤트{% endif %}
+                {% if search_type == 'all' %}전체{% endif %} 
+                검색 결과: {{ total_results }}개
+            </p>
+        </div>
+    </div>
+
+    <!-- 검색 필터 -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <form method="get" class="d-flex justify-content-center">
+                <div class="input-group" style="max-width: 600px;">
+                    <input type="text" name="q" class="form-control" 
+                           placeholder="제주의 장소, 이벤트를 검색해보세요" 
+                           value="{{ query }}">
+                    <select name="type" class="form-control" style="max-width: 150px;">
+                        <option value="all" {% if search_type == 'all' %}selected{% endif %}>전체</option>
+                        <option value="spots" {% if search_type == 'spots' %}selected{% endif %}>장소</option>
+                        <option value="events" {% if search_type == 'events' %}selected{% endif %}>이벤트</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> 검색
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 검색 결과 -->
+    <div class="row">
+        {% if total_results == 0 %}
+            <div class="col-12 text-center">
+                <p class="text-muted">검색 결과가 없습니다.</p>
+            </div>
+        {% endif %}
+
+        <!-- 장소 결과 -->
+        {% if spots and (search_type == 'all' or search_type == 'spots') %}
+            <div class="col-12 mb-4">
+                <h3>장소 ({{ spots|length }})</h3>
+                <div class="row">
+                    {% for spot in spots %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <a href="{% url 'spot-detail' spot.id %}">{{ spot.title }}</a>
+                                    </h5>
+                                    <p class="card-text text-muted">
+                                        {{ spot.description|truncatechars:100 }}
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge bg-primary">
+                                            {% if spot.category == 'restaurant' %}맛집
+                                            {% elif spot.category == 'cafe' %}카페
+                                            {% elif spot.category == 'activity' %}액티비티
+                                            {% elif spot.category == 'hidden_spot' %}숨은 명소
+                                            {% else %}{{ spot.category }}
+                                            {% endif %}
+                                        </span>
+                                        <small class="text-muted">
+                                            <i class="fas fa-map-marker-alt"></i> {{ spot.address }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- 이벤트 결과 -->
+        {% if events and (search_type == 'all' or search_type == 'events') %}
+            <div class="col-12 mb-4">
+                <h3>이벤트 ({{ events|length }})</h3>
+                <div class="row">
+                    {% for event in events %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <a href="{% url 'event-detail' event.id %}">{{ event.title }}</a>
+                                    </h5>
+                                    <p class="card-text text-muted">
+                                        {{ event.description|truncatechars:100 }}
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge bg-primary">{{ event.event_type }}</span>
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar-alt"></i> 
+                                            {{ event.start_date|date:"Y-m-d" }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchCards = document.querySelectorAll('.card');
+        searchCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.classList.add('shadow-lg');
+            });
+            card.addEventListener('mouseleave', function() {
+                this.classList.remove('shadow-lg');
+            });
+        });
+    });
+</script>
+{% endblock %}
